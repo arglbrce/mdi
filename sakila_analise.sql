@@ -15,20 +15,19 @@ select distinct date(rental_date) as rental_date,  film_id, customer_id
 from rental r left join inventory i
  on (r.inventory_id = i.inventory_id)) a
 
+select 'fact table1', count(*) from (
+select  distinct date(rental_date),
+DATE_FORMAT(rental_date,  '%H') as rental_hour from rental ) fact
 
 /* análise de consistência */
 select 'base table', sum(amount) from payment
 union all
 select 'fact table', sum(amount) from rental r left join payment p 
 on (r.rental_id = p.rental_id)
-
-
-
-
-select customer_id, sum(amount) extra_amont from payment where rental_id is null 
+/* pagamento extra por cliente */
+select customer_id, sum(amount) extra_amount from payment where rental_id is null 
 group by customer_id
-
-
+/* pagamento sem aluguel */
 select sum(amount) as extra_amont from payment where rental_id is null 
 
 
@@ -57,7 +56,7 @@ group by rental_id, customer_id
  /* film */
  select f.film_id, title, category, actor from film f 
  left join (select film_id, GROUP_CONCAT(y.name) as category from film_category fm left join category y on (fm.category_id = y.category_id) group by film_id) c on (f.film_id = c.film_id)
- left join (select film_id,  GROUP_CONCAT(concat(first_name,' ', last_name)) from film_actor fa left join actor t on (fa.actor_id = t.actor_id) group by film_id) a on  (f.film_id = a.film_id) 
+ left join (select film_id,  GROUP_CONCAT(concat(first_name,' ', last_name)) as actor from film_actor fa left join actor t on (fa.actor_id = t.actor_id) group by film_id) a on  (f.film_id = a.film_id) 
   
  /* staff */
  select staff_id, concat(first_name,' ', last_name) as name  from staff
@@ -67,9 +66,5 @@ group by rental_id, customer_id
  
  /* hour */
  select distinct DATE_FORMAT(rental_date,  '%H') as hour from rental
- 
- 
- 
- 
 
 
